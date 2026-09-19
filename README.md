@@ -1,5 +1,3 @@
-cat > README.md << 'EOF'
-
 # BanglaDialectNet
 
 Convert Bangla regional dialect speech and text (Noakhali, Barishal, Chittagong,
