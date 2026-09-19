@@ -15,4 +15,5 @@ Sylhet, Mymensingh — including Banglish/romanized input) into standard Bangla 
 - `models/` — trained model artifacts (not committed; hosted on Hugging Face)
 - `docs/` — documentation
 - `tests/` — automated tests
+- `scripts/` — verification and validation scripts
   EOF
