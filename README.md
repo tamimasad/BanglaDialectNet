@@ -1,7 +1,7 @@
 # BanglaDialectNet
 
 Convert Bangla regional dialect speech and text (Noakhali, Barishal, Chittagong,
-Sylhet, Mymensingh — including Banglish/romanized input) into standard Bangla text.
+Sylhet, Mymensingh — including Banglish/romanized input) into standard Bangla and English text.
 
 ## Status
 
