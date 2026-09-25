@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from data.load_dataset import load_all_splits  # type: ignore[import-not-found]
 
-EXPECTED_DIALECTS = {"Noakhali", "Barishal", "Chittagong", "Sylhet", "Mymensingh"}
+EXPECTED_DIALECTS = {"Noakhali", "Barishal ", "Chittagong", "Sylhet", "Mymensingh"}
 
 
 def validate_split(name, df):
