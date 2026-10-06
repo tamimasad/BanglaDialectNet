@@ -103,6 +103,34 @@ def write_data_card(totals, dropped_totals):
         f.write("\n".join(lines))
 
 
+def write_dialect_csvs(name, clean_rows):
+    """Export five dialect CSVs without changing the existing split membership."""
+    split_folders = {
+        "train": "Train",
+        "training": "Train",
+        "test": "Test",
+        "val": "Validation",
+        "valid": "Validation",
+        "validation": "Validation",
+        "dev": "Validation",
+    }
+    split_key = str(name).strip().lower()
+    if split_key not in split_folders:
+        raise ValueError(f"Unsupported split name: {name!r}")
+
+    split_name = split_folders[split_key]
+    split_dir = os.path.join(PROCESSED_DIR, split_name)
+    os.makedirs(split_dir, exist_ok=True)
+
+    for dialect in sorted(EXPECTED_DIALECTS):
+        dialect_rows = clean_rows.loc[clean_rows["region"] == dialect]
+        dialect_rows.to_csv(
+            os.path.join(split_dir, f"{dialect}_{split_name}.csv"),
+            index=False,
+            encoding="utf-8-sig",
+        )
+
+
 def main():
     os.makedirs(PROCESSED_DIR, exist_ok=True)
     os.makedirs(REVIEW_DIR, exist_ok=True)
@@ -113,11 +141,7 @@ def main():
         totals[name] = len(clean_rows)
         dropped_totals[name] = len(dropped_rows)
 
-        clean_rows.to_csv(
-            os.path.join(PROCESSED_DIR, f"{name}.csv"),
-            index=False,
-            encoding="utf-8-sig",
-        )
+        write_dialect_csvs(name, clean_rows)
         if len(dropped_rows) > 0:
             dropped_rows.to_csv(
                 os.path.join(REVIEW_DIR, f"{name}_dropped.csv"),
