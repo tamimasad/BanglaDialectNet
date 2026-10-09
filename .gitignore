@@ -157,10 +157,13 @@ ENV/
 env.bak/
 venv.bak/
 
+# Models and associate files
+models/
+
 # Datasets
 dataset/
 data/
-
+data_unified/
 # Spyder project settings
 .spyderproject
 .spyproject
