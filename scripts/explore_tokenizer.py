@@ -15,7 +15,7 @@ import numpy as np
 from transformers import AutoTokenizer
 from normalizer import normalize
 
-from data.load_processed import load_processed_splits
+from data_loader.load_processed import load_processed_splits
 
 MODEL_NAME = "csebuetnlp/banglat5"
 

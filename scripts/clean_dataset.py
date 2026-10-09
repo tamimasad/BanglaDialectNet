@@ -18,7 +18,7 @@ import sys
 
 sys.path.insert(0, "src")
 
-from data.load_dataset import load_all_splits
+from data_loader.load_dataset import load_all_splits
 
 PROCESSED_DIR = "dataset/processed"
 REVIEW_DIR = "data/processed/needs_review"

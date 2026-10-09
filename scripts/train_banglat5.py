@@ -20,8 +20,8 @@ from transformers import (
     EarlyStoppingCallback,
 )
 
-from loader.load_processed import load_processed_splits
-from loader.multitask import build_task_examples
+from data_loader.load_processed import load_processed_splits
+from data_loader.multitask import build_task_examples
 
 MODEL_NAME = "csebuetnlp/banglat5"
 OUTPUT_DIR = "models/banglat5-baseline"

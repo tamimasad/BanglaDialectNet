@@ -27,7 +27,7 @@ matplotlib.use("Agg")  # no GUI needed -- just save PNG files
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, "src")
-from data.load_dataset import load_all_splits
+from data_loader.load_dataset import load_all_splits
 
 FIGURES_DIR = "reports/figures"
 SUMMARY_PATH = "reports/dataset_summary.md"

@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, "src")
 
-from data.load_processed import load_processed_splits
+from data_loader.load_processed import load_processed_splits
 
 EXPECTED_COUNTS = {"train": 9295, "validation": 1237, "test": 1869}
 
