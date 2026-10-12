@@ -36,7 +36,7 @@ def load_model():
     print(f"Loading trained model: {MODEL_PATH}")
 
     tokenizer = AutoTokenizer.from_pretrained(
-        MODEL_PATH,
+        "csebuetnlp/banglat5",
         use_fast=False,
     )
 
