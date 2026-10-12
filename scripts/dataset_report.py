@@ -8,7 +8,8 @@ What this checks:
      per dialect -- informs tokenizer max_length choices.
   2. Character-set sanity check -- flags any unexpected non-Bangla,
      non-Latin, non-punctuation characters.
-  3. Train/validation/test leakage check.
+  3. Train/validation/test leakage check for both dialect input scripts.
+  4. Identical dialect/standard text checks where the scripts match.
 
 Outputs:
   reports/eda_summary.md      -- human-readable summary
@@ -23,7 +24,7 @@ from collections import Counter
 
 import matplotlib
 
-matplotlib.use("Agg")  # no GUI needed -- just save PNG files
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, "src")
@@ -31,7 +32,8 @@ from data_loader.load_dataset import load_all_splits
 
 FIGURES_DIR = "reports/figures"
 SUMMARY_PATH = "reports/dataset_summary.md"
-TEXT_COLUMNS = ["standard_bangla", "dialect_bangla", "english"]
+TEXT_COLUMNS = ["standard_bangla", "dialect_bangla", "dialect_banglish", "english"]
+DIALECT_COLUMNS = ("dialect_bangla", "dialect_banglish")
 
 
 def length_stats(df, col):
@@ -85,13 +87,10 @@ def character_set_report(df, columns):
     return unexpected
 
 
-def leakage_check(splits):
-    """
-    Check whether any exact (dialect_bangla, standard_bangla) pair
-    appears in more than one split.
-    """
+def leakage_check(splits, dialect_column="dialect_bangla"):
+    """Check exact (dialect text, standard Bangla) pairs across splits."""
     split_sets = {
-        name: set(zip(df["dialect_bangla"], df["standard_bangla"]))
+        name: set(zip(df[dialect_column], df["standard_bangla"]))
         for name, df in splits.items()
     }
     leaks = {}
@@ -106,9 +105,11 @@ def leakage_check(splits):
     return leaks
 
 
-def identical_rows_by_dialect(df):
-    """Count rows where dialect_bangla == standard_bangla, per dialect."""
-    identical = df[df["dialect_bangla"] == df["standard_bangla"]]
+def identical_rows_by_dialect(
+    df, dialect_column="dialect_bangla", standard_column="standard_bangla"
+):
+    """Count exact matches between comparable text columns, by region."""
+    identical = df[df[dialect_column] == df[standard_column]]
     return identical["region"].value_counts().to_dict()
 
 
@@ -116,6 +117,21 @@ def main():
     os.makedirs(FIGURES_DIR, exist_ok=True)
 
     splits = load_all_splits()
+    for split_name, df in splits.items():
+        missing = [col for col in (*TEXT_COLUMNS, "region") if col not in df.columns]
+        if missing:
+            raise ValueError(
+                f"{split_name} split is missing columns {missing}. "
+                "Ensure load_all_splits() exposes dialect_banglish as well "
+                "as the existing Bangla, English, and region columns."
+            )
+
+    train_df = next(
+        (df for name, df in splits.items() if str(name).lower() == "train"), None
+    )
+    if train_df is None:
+        raise ValueError("load_all_splits() must include a Train split")
+
     report_lines = ["# BanglaDialectNet -- Exploratory Data Analysis\n"]
 
     for split_name, df in splits.items():
@@ -133,7 +149,7 @@ def main():
             print(f"Saved {path}")
 
     print("\nChecking character set (train split)...")
-    unexpected = character_set_report(splits["Train"], TEXT_COLUMNS)
+    unexpected = character_set_report(train_df, TEXT_COLUMNS)
     report_lines.append("\n## Unexpected characters (train split)\n")
     if unexpected:
         for ch, count in unexpected.most_common(20):
@@ -143,28 +159,73 @@ def main():
             "- None found -- all text is within expected Bangla/Latin/punctuation ranges."
         )
 
-    print("Checking for train/validation/test leakage...")
-    leaks = leakage_check(splits)
+    report_lines.append("\n## Unexpected characters by dialect input (train split)\n")
+    for dialect_column in DIALECT_COLUMNS:
+        report_lines.append(f"\n### {dialect_column}\n")
+        column_unexpected = character_set_report(train_df, [dialect_column])
+        if column_unexpected:
+            for ch, count in column_unexpected.most_common(20):
+                report_lines.append(f"- {ch}: {count} occurrences")
+        else:
+            report_lines.append("- None found.")
+
+    print("Checking for train/validation/test leakage (Bangla and Banglish)...")
     report_lines.append("\n## Train/validation/test leakage check\n")
-    if leaks:
-        for pair, count in leaks.items():
+    for dialect_column in DIALECT_COLUMNS:
+        report_lines.append(f"\n### {dialect_column} -> standard_bangla\n")
+        leaks = leakage_check(splits, dialect_column=dialect_column)
+        if leaks:
+            for pair, count in leaks.items():
+                report_lines.append(
+                    f"- [WARN] {pair}: {count} overlapping "
+                    f"({dialect_column}, standard_bangla) pairs"
+                )
+        else:
             report_lines.append(
-                f"- [WARN] {pair}: {count} overlapping (dialect, standard) pairs"
+                "- None found -- no exact pair appears in more than one split."
             )
-    else:
-        report_lines.append(
-            "- None found -- no exact pair appears in more than one split."
-        )
 
     report_lines.append(
         "\n## Identical dialect/standard text rows, by dialect (train split)\n"
     )
-    identical_counts = identical_rows_by_dialect(splits["Train"])
+    report_lines.append("\n### dialect_bangla == standard_bangla\n")
+    identical_counts = identical_rows_by_dialect(train_df)
     if identical_counts:
         for dialect, count in identical_counts.items():
             report_lines.append(f"- {dialect}: {count} rows")
     else:
         report_lines.append("- None.")
+
+    """ A Banglish string cannot usefully be compared for literal equality
+        with standard_bangla (Bangla script). Use the standard romanized
+        counterpart if it was retained by the validated-data loader."""
+    standard_banglish_column = next(
+        (
+            col
+            for col in ("standard_banglish", "banglish_speech")
+            if col in train_df.columns
+        ),
+        None,
+    )
+    report_lines.append("\n### dialect_banglish == standard Banglish\n")
+    if standard_banglish_column is None:
+        report_lines.append(
+            "- Not checked: the validated data has no standard_banglish "
+            "or banglish_speech column. Comparing Latin-script "
+            "dialect_banglish to Bangla-script standard_bangla would "
+            "not be a meaningful exact-match check."
+        )
+    else:
+        identical_counts = identical_rows_by_dialect(
+            train_df,
+            dialect_column="dialect_banglish",
+            standard_column=standard_banglish_column,
+        )
+        if identical_counts:
+            for dialect, count in identical_counts.items():
+                report_lines.append(f"- {dialect}: {count} rows")
+        else:
+            report_lines.append("- None.")
 
     with open(SUMMARY_PATH, "w", encoding="utf-8") as f:
         f.write("\n".join(report_lines))
