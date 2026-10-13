@@ -160,10 +160,14 @@ venv.bak/
 # Models and associate files
 models/
 
+# Analyze files
+analyze_dialect_confusion.py 
+
 # Datasets
 dataset/
 data/
 data_unified/
+predictions_test.csv
 # Spyder project settings
 .spyderproject
 .spyproject

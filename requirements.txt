@@ -153,3 +153,4 @@ websocket-client==1.9.2
 widgetsnbextension==4.0.16
 xxhash==4.0.1
 yarl==1.25.1
+tensorboard==2.21.0
