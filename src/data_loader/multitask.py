@@ -1,17 +1,12 @@
 """
-Shared multi-task example builder for BanglaDialectNet.
+Shared multi-task data builder for BanglaDialectNet.
 
-For each of the 3 output tasks (normalize, translate-to-english,
-identify-dialect), TWO input variants are generated:
-    - from dialect_bangla   (Bangla script)   -> task prefix as before
-    - from dialect_banglish (romanized/Latin) -> task prefix + " banglish"
+Each task is generated for Bangla and Banglish inputs:
+- normalize
+- translate to English
+- identify dialect
 
-This keeps everything in ONE multi-task model: the model distinguishes
-script both from the prefix and from the actual characters it sees.
-
-bangla_normalize() is applied ONLY to Bangla-script text -- it's a
-Bangla-Unicode-specific pipeline, not meant for romanized Latin text.
-
+Bangla normalization is applied only to Bangla-script text.
 """
 
 from normalizer import normalize as bangla_normalize
@@ -33,8 +28,13 @@ ALL_TASKS = (
 )
 
 
-def build_task_examples(df, tasks=ALL_TASKS):
-    """Expand each row into (input, target, task) triples for the given tasks."""
+def build_task_examples(df, tasks=ALL_TASKS, oversample=None):
+    """
+    oversample: optional dict of {task_name: {region_name: multiplier}}.
+    Used only on training data to upweight specific task-region pairs.
+    Never apply it to validation/test data.
+    """
+    oversample = oversample or {}
     inputs, targets, task_names = [], [], []
 
     for _, row in df.iterrows():
@@ -44,34 +44,24 @@ def build_task_examples(df, tasks=ALL_TASKS):
         english_text = str(row["english"])
         region = str(row["region"])
 
+        def add(task, input_text, target_text):
+            multiplier = oversample.get(task, {}).get(region, 1)
+            for _ in range(multiplier):
+                inputs.append(f"{task}: {input_text}")
+                targets.append(target_text)
+                task_names.append(task)
+
         if TASK_NORMALIZE in tasks:
-            inputs.append(f"{TASK_NORMALIZE}: {dialect_bangla_text}")
-            targets.append(standard_text)
-            task_names.append(TASK_NORMALIZE)
-
+            add(TASK_NORMALIZE, dialect_bangla_text, standard_text)
         if TASK_NORMALIZE_BANGLISH in tasks:
-            inputs.append(f"{TASK_NORMALIZE_BANGLISH}: {dialect_banglish_text}")
-            targets.append(standard_text)
-            task_names.append(TASK_NORMALIZE_BANGLISH)
-
+            add(TASK_NORMALIZE_BANGLISH, dialect_banglish_text, standard_text)
         if TASK_TRANSLATE in tasks:
-            inputs.append(f"{TASK_TRANSLATE}: {dialect_bangla_text}")
-            targets.append(english_text)
-            task_names.append(TASK_TRANSLATE)
-
+            add(TASK_TRANSLATE, dialect_bangla_text, english_text)
         if TASK_TRANSLATE_BANGLISH in tasks:
-            inputs.append(f"{TASK_TRANSLATE_BANGLISH}: {dialect_banglish_text}")
-            targets.append(english_text)
-            task_names.append(TASK_TRANSLATE_BANGLISH)
-
+            add(TASK_TRANSLATE_BANGLISH, dialect_banglish_text, english_text)
         if TASK_IDENTIFY in tasks:
-            inputs.append(f"{TASK_IDENTIFY}: {dialect_bangla_text}")
-            targets.append(region)
-            task_names.append(TASK_IDENTIFY)
-
+            add(TASK_IDENTIFY, dialect_bangla_text, region)
         if TASK_IDENTIFY_BANGLISH in tasks:
-            inputs.append(f"{TASK_IDENTIFY_BANGLISH}: {dialect_banglish_text}")
-            targets.append(region)
-            task_names.append(TASK_IDENTIFY_BANGLISH)
+            add(TASK_IDENTIFY_BANGLISH, dialect_banglish_text, region)
 
     return inputs, targets, task_names
