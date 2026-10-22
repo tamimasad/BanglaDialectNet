@@ -1,8 +1,10 @@
 """
-Run all 3 BanglaDialectNet tasks using the trained BanglaT5 model.
+Run all 3 BanglaDialectNet tasks using the trained BanglaDINT-T5 model.
 
 Usage:
-python scripts/infer_banglat5.py --text "কই যাইবার চাও?"
+python scripts/test_banglat5.py --text "কই যাইবার চাও?"
+Or
+python scripts/test_banglat5.py --text "koi jaibar chao?"
 """
 
 import argparse
@@ -14,7 +16,9 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 # Paths
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-MODEL_PATH = PROJECT_ROOT / "models" / "bangladint-t5"
+MODEL_PATH = (
+    PROJECT_ROOT / "models" / "BanglaDINT-T5"
+)  # Fine-tuned banglat5 for BanglaDialectNet
 
 
 TASK_PREFIXES = {

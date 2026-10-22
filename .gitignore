@@ -160,7 +160,7 @@ venv.bak/
 
 # Models and associate files
 models/
-
+release/
 # Analyze files
 analyze_dialect_confusion.py 
 
