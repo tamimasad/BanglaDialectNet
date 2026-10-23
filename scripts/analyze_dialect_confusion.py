@@ -23,7 +23,7 @@ def build_confusion(df, task_name):
 
 
 def main():
-    df = pd.read_csv("reports/raw_predictions_test.csv")
+    df = pd.read_csv("reports/predictions_BanglaDINT-T5-production_test.csv")
 
     for task_name in TASKS_TO_CHECK:
         print(f"\n{'='*60}\nConfusion matrix: {task_name}\n{'='*60}")

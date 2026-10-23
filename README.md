@@ -1,7 +1,7 @@
 # BanglaDialectNet
 
 **BanglaDINT-T5** — a single multi-task T5 model that converts Bangla regional
-dialect speech/text (Bangla script _or_ romanized Banglish) into **Standard
+dialect text (Bangla script _or_ romanized Banglish) into **Standard
 Bangla**, **English**, and identifies **which of 5 dialects** it was written in:
 Noakhali, Barishal, Chittagong, Sylhet, and Mymensingh.
 
