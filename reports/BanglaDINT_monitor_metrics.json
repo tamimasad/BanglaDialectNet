@@ -1,0 +1,17 @@
+{
+  "eval_loss": 0.6349786520004272,
+  "eval_acc_Noakhali": 86.79245283018868,
+  "eval_acc_Barishal": 90.80188679245283,
+  "eval_acc_Chittagong": 91.50943396226415,
+  "eval_acc_Sylhet": 89.85849056603773,
+  "eval_acc_Mymensingh": 90.88669950738917,
+  "eval_dialect_macro_acc": 89.9697927316665,
+  "eval_dialect_min_acc": 86.79245283018868,
+  "eval_normalize_chrf": 81.5325032464794,
+  "eval_translate_chrf": 67.95832410235903,
+  "eval_balanced_score": 79.82020669350165,
+  "eval_runtime": 117.2871,
+  "eval_samples_per_second": 53.766,
+  "eval_steps_per_second": 1.688,
+  "epoch": 8.0
+}
