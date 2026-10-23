@@ -49,10 +49,10 @@ trick T5 itself uses):
 
 ```
 ├── src/data_loader/   # dataset loading, cleaning, multi-task example building
-├── scripts/           # training, evaluation, diagnostics, publishing
+├── scripts/           # training and evaluation
+├── tests/              # smoke-test script against the published Hub model
 ├── docs/               # data card, model card, results write-ups
 ├── reports/            # EDA and dataset summary reports
-├── space/              # the Gradio app behind the live demo (Hub Space)
 └── models/             # trained model artifacts (not committed, hosted on the Hub)
 ```
 
@@ -72,10 +72,12 @@ Download it, then arrange the files under `dataset/raw/` so it looks like
 this (one CSV per dialect inside each split folder — rename/reorganize the
 downloaded folders to match if Kaggle's own structure differs):
 
+```
 dataset/raw/
-├── Train/ # 5 per-dialect CSVs
-├── Validation/ # 5 per-dialect CSVs
-└── Test/ # 5 per-dialect CSVs
+├── Train/          # 5 per-dialect CSVs
+├── Validation/      # 5 per-dialect CSVs
+└── Test/             # 5 per-dialect CSVs
+```
 
 `dataset/` is git-ignored on purpose — the raw data isn't redistributed in
 this repo, only pulled from Kaggle directly.
@@ -107,6 +109,16 @@ python scripts/train_bangladint.py
 ```bash
 python scripts/evaluate_banglat5.py --model models/BanglaDINT-T5-production --split test
 ```
+
+### Try the published model directly (no training needed)
+
+```bash
+python tests/test_banglat5.py --text "কই যাইবার চাও?"
+```
+
+See [docs/model_card_BanglaDINT.md](docs/model_card_BanglaDINT.md) for full
+training configuration and [docs/data_card.md](docs/data_card.md) for dataset
+details.
 
 ## Dataset & credits
 
