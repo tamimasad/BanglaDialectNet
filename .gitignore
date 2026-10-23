@@ -164,10 +164,6 @@ release/
 huggingface_push/
 space/
 
-
-# Analyze files
-analyze_dialect_confusion.py 
-
 # Datasets
 dataset/
 data/
